@@ -52,7 +52,7 @@ passport.use(
           permissions: [],
           email: jsonProfile.email,
         };
-        const userA = await Authentication.UserColl(userObj);
+        const userA = new Authentication.UserColl(userObj);
         await userA.save();
         return done(null, userObj);
       }
@@ -75,11 +75,22 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user);
+  console.log('serial', user);
+  done(null, user.id);
 });
 
 passport.deserializeUser((obj, done) => {
-  done(null, obj);
+  console.log('desiarl', obj);
+  Authentication.UserColl.findOne({ id: obj }).then(user => {
+    done(null, user);
+  });
 });
+
+export const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated() && req.user) {
+    return next();
+  }
+  res.redirect('http://localhost:3000/login');
+};
 
 export default passport;
