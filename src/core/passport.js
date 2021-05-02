@@ -1,23 +1,9 @@
-import passport from 'passport';
+import passport, { use } from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { Strategy as FacebookStrategy } from 'passport-facebook';
-import FacebookTokenStrategy from 'passport-facebook-token';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import GoogleTokenStrategy from '@smth-for/passport-google-access-token';
-import AppleStrategy from '@nicokaiser/passport-apple';
-import AppleTokenStrategy from '@mrbatista/passport-apple-token'; // TODO: new passport-apple-token
 
-import {
-  SECRET_KEY,
-  FACEBOOK_APP_ID,
-  FACEBOOK_APP_SECRET,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  APPLE_SERVICES_ID,
-  APPLE_TEAM_ID,
-  APPLE_KEY_ID,
-  APPLE_PRIVATE_KEY,
-} from '~/env';
+import { SECRET_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '~/env';
 import { Authentication } from '~/authentication';
 
 passport.use(
@@ -44,41 +30,33 @@ passport.use(
 );
 
 passport.use(
-  new FacebookStrategy(
-    {
-      clientID: FACEBOOK_APP_ID,
-      clientSecret: FACEBOOK_APP_SECRET,
-      callbackURL: '/authentication/facebook/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
-    },
-  ),
-);
-
-// https://developers.facebook.com/docs/facebook-login/web
-passport.use(
-  new FacebookTokenStrategy(
-    {
-      clientID: FACEBOOK_APP_ID,
-      clientSecret: FACEBOOK_APP_SECRET,
-      fbGraphVersion: 'v9.0',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
-    },
-  ),
-);
-
-passport.use(
   new GoogleStrategy(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: '/authentication/google/callback',
+      scope: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'openid',
+      ],
     },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
+    async (accessToken, refreshToken, profile, done) => {
+      const jsonProfile = profile._json;
+      const user = await Authentication.UserColl.findOne({ id: jsonProfile.sub }).exec();
+      if (!user) {
+        const userObj = {
+          id: jsonProfile.sub,
+          name: jsonProfile.name,
+          picture: jsonProfile.picture,
+          permissions: [],
+          email: jsonProfile.email,
+        };
+        const userA = await Authentication.UserColl(userObj);
+        await userA.save();
+        return done(null, userObj);
+      }
+      return done(null, user);
     },
   ),
 );
@@ -89,37 +67,6 @@ passport.use(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
-    },
-  ),
-);
-
-passport.use(
-  new AppleStrategy(
-    {
-      clientID: APPLE_SERVICES_ID,
-      teamID: APPLE_TEAM_ID,
-      keyID: APPLE_KEY_ID,
-      key: APPLE_PRIVATE_KEY,
-      callbackURL: '/authentication/apple/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
-    },
-  ),
-);
-
-// https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js
-passport.use(
-  new AppleTokenStrategy(
-    {
-      clientID: APPLE_SERVICES_ID,
-      // Generate clientSecret for accessToken and refreshToken
-      teamID: APPLE_TEAM_ID,
-      keyID: APPLE_KEY_ID,
-      key: APPLE_PRIVATE_KEY,
     },
     (accessToken, refreshToken, profile, done) => {
       return done(null, profile);

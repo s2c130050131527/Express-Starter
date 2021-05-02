@@ -1,5 +1,4 @@
 import { Router } from 'express';
-
 import { ListColl } from './model';
 
 const controller = (() => {

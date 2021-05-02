@@ -30,6 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
+    name: 'sm.auth',
     secret: SECRET_KEY,
     store: new (MongoStore(session))({ mongooseConnection: mongoose.connection }),
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 * 2 },
