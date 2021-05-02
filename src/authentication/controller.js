@@ -11,29 +11,7 @@ import passport from 'passport';
 
 const controller = (() => {
   const router = Router();
-
-  /**
-   * @name profile - User profile
-   *
-   * @example GET /authentication/profile Header { Authorization: `Bearer ${token}` }
-   */
-  router.get('/profile', async (req, res) => {
-    const { user } = req;
-
-    res.status(200).json({ data: user });
-  });
-
-  /**
-   * Social Login
-   */
-
-  /**
-   * URL /authentication/facebook/login
-   * @example <a href="<HOST_NAME>/authentication/facebook/login">
-   */
   router.get('/google/login', (req, res, next) => {
-    // set data in session
-    // req.session
     passport.authenticate('google')(req, res, next);
   });
 
@@ -50,12 +28,6 @@ const controller = (() => {
     },
   );
 
-  /**
-   * @name google-auth
-   * @return {Object<{ user: Object }>}
-   *
-   * @example POST /authentication/google/token { access_token: ${accessToken} }
-   */
   router.post('/google/token', passport.authenticate('google-token'), (req, res) => {
     res.json({ user: req.user });
   });
