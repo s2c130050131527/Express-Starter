@@ -5,7 +5,6 @@ import { Authentication } from '~/authentication';
 const controller = (() => {
   const router = Router();
   router.get('/', async (req, res) => {
-    console.log(req.user);
     const permissionList = await PermissionColl.find().exec();
     res.json({ data: { permissionList: permissionList[0].permissionList } });
   });

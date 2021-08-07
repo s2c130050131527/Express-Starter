@@ -14,6 +14,11 @@ router.get('/', (req, res) => {
   res.send(`app-root, ${INDEX_NAME} mode`);
 });
 
+router.get('/me', ensureAuthenticated, (req, res) => {
+  const { user } = req;
+  res.status(200).json({ data: user });
+});
+
 router.use(crudOperations.prefix, crudOperations);
 router.use(authentication.prefix, authentication);
 router.use(appPermissions.prefix, ensureAuthenticated, appPermissions);

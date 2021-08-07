@@ -1,4 +1,4 @@
-import passport, { use } from 'passport';
+import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import GoogleTokenStrategy from '@smth-for/passport-google-access-token';
@@ -75,12 +75,10 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log('serial', user);
   done(null, user.id);
 });
 
 passport.deserializeUser((obj, done) => {
-  console.log('desiarl', obj);
   Authentication.UserColl.findOne({ id: obj }).then(user => {
     done(null, user);
   });
@@ -90,7 +88,7 @@ export const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated() && req.user) {
     return next();
   }
-  res.redirect('http://localhost:3000/login');
+  res.status(401).send('Unauthorized');
 };
 
 export default passport;
