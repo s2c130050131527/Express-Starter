@@ -1,0 +1,5 @@
+deploy:
+  provider: gae
+  keyfile: client-secret.json
+  project: simplilearn-fsdev
+  on: main
